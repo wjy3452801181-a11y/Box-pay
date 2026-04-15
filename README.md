@@ -2,359 +2,256 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
 
-Stablecoin settlement infrastructure for web and AI-native clients.
+PayFi Box is an enterprise payment orchestration platform that lets businesses continue paying in fiat while the platform handles stablecoin conversion, global settlement, and audit visibility in the background.
 
-PayFi Box is a stablecoin settlement infrastructure for web and AI-native clients. It combines natural-language settlement initiation, fiat collection, KYC gating, platform balance management, onchain stablecoin execution, and auditable settlement detail in one product surface.
+Instead of exposing only a final payment status, it keeps one durable settlement backbone across:
+- natural-language payment initiation
+- merchant fiat collection with KYC gating
+- platform balance top-up and balance-funded settlement
+- treasury-goal orchestration for “top up, then settle”
+- provider-backed conversion and custody payout
+- payment detail, timeline, and audit visibility
 
-PayFi Box 面向真实资金流的结算场景：用户可以通过网页或 MCP 发起结算，平台完成报价、风控、法币入金、平台余额管理、链上稳定币执行与结算核查。
+In practical terms, PayFi Box sits between familiar enterprise payment workflows and a programmable stablecoin settlement rail.
 
-## Quick Start
+The current product showcase is centered on an `HKD -> e-HKD` funding and settlement path, while keeping the execution model general enough for other supported stablecoins.
 
-```bash
-cp .env.example .env
-cp apps/web/.env.example apps/web/.env.local
-cp apps/api/.env.example apps/api/.env
-make install
-make db
-make migrate
-make seed
-make api-start
-make web-start
-```
+## Why PayFi Box
 
-Local URLs:
+Most payment products expose only the front of the flow: a request goes in, a status comes back. PayFi Box is built around the execution truth behind that status.
 
-- Web: [http://127.0.0.1:3000](http://127.0.0.1:3000)
-- API health: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
-- MCP endpoint: [http://127.0.0.1:8000/mcp/](http://127.0.0.1:8000/mcp/)
+The product is designed for a very specific wedge:
+- enterprises still want to operate in fiat
+- operations teams still need controlled, reviewable workflows
+- finance teams still need traceability and auditability
+- AI-native systems increasingly need a safe way to initiate, explain, and coordinate payments
 
-## Why This Repo
+It keeps the full chain visible:
+- how a payment request was created
+- whether fiat was actually received
+- whether KYC or policy checks blocked progress
+- whether funds were converted and routed into custody
+- how the payout was executed
+- what the final audit trail looks like
 
-- Unified settlement backbone across merchant fiat settlement, platform balance, and MCP-driven AI workflows
-- Natural-language settlement initiation with AI guidance and route recommendation
-- KYC-gated fiat collection, Stripe checkout, and stablecoin payout on HashKey Chain Testnet
-- Auditable settlement detail with payment order, execution batch, execution items, timeline, and risk signals
+## Primary Workflows
+
+- `/command-center`
+  Natural-language settlement initiation. Turn a plain-language payment request into preview, risk context, route guidance, and confirmation.
+- `/merchant`
+  Merchant fiat-in to stablecoin-out operations. Review quote, fiat receipt, KYC, Stripe state, and payout progression on one surface.
+- `/balance`
+  Platform balance workflow. Top up fiat, convert into stored stablecoin value, and settle directly from balance.
+- `/mcp`
+  MCP guidance for external AI clients. Shows how access, balance, treasury goals, and settlement tools fit together.
+- `/payments/:id`
+  Settlement detail and execution truth. Inspect status, timeline, execution items, and audit context.
+- `/audit`
+  Transfer records and internal review surface for traceability, export, and AI-generated summaries.
+
+## Product Snapshot
+
+- Unified execution backbone
+  `payment_order`, `payment_execution_batch`, and `payment_execution_item` stay the source of truth across web and MCP entrypoints.
+- Treasury-goal orchestration
+  The product can persist a “top up then settle” goal and advance it re-entrantly through KYC, funding, sync, preview, and confirmation.
+- Provider-backed production path
+  The intended production route is provider-backed conversion plus custody payout, not direct backend-managed hot-wallet execution.
+- AI-visible surfaces
+  AI is used to draft, explain, summarize, and guide next actions, while ledger state, provider state, and execution state remain deterministic.
+
+## What AI Enables
+
+AI in PayFi Box is not a cosmetic chatbot layer. It is used to make payment operations easier to understand and safer to coordinate.
+
+- Draft
+  Turn natural-language payment intent into structured settlement actions and previews.
+- Explain
+  Generate operator-facing explanations for payment state, settlement progress, and blocked paths.
+- Summarize
+  Produce audit-friendly summaries for internal review surfaces.
+- Guide
+  Recommend the next valid step while keeping money movement, ledger changes, and provider state deterministic.
+- Connect
+  Expose the product through MCP so external AI clients can use balance, settlement, and audit tools within controlled access boundaries.
 
 ## System Model
 
 ```mermaid
 flowchart LR
-    U1["Web users"] --> WEB["Next.js product surfaces"]
-    U2["External AI clients"] --> MCP["MCP endpoint"]
-    WEB --> API["FastAPI settlement API"]
-    MCP --> API
+    WEB["Web product surfaces"] --> API["FastAPI API"]
+    MCP["AI clients via MCP"] --> API
 
-    API --> KYC["KYC gating"]
-    API --> FIAT["Fiat collection / Stripe"]
-    API --> BAL["Platform balance accounts"]
-    API --> EXEC["Settlement execution backbone"]
+    API --> AUTH["Access session / token auth"]
+    API --> KYC["KYC verification"]
+    API --> FIAT["Fiat collection"]
+    API --> BAL["Platform balance"]
+    API --> TREASURY["Treasury goal orchestration"]
+    API --> EXEC["Execution backbone"]
 
-    EXEC --> PO["Payment order"]
-    EXEC --> EB["Execution batch"]
-    EXEC --> EI["Execution items"]
-    EXEC --> CHAIN["HashKey Chain Testnet"]
+    EXEC --> PO["payment_order"]
+    EXEC --> EB["payment_execution_batch"]
+    EXEC --> EI["payment_execution_item"]
+    EXEC --> CONV["Conversion provider"]
+    EXEC --> CUSTODY["Custody provider"]
 ```
 
-## What It Does
+## Tech Stack
 
-- Natural-language settlement initiation for payment requests and payout instructions
-- Merchant fiat-in -> stablecoin-out settlement with KYC and Stripe collection
-- Platform balance accounts that let users deposit fiat, convert to stablecoin balance, and settle from balance
-- MCP access so external AI clients can query balances, create deposits, preview settlements, and confirm eligible actions
-- Truthful settlement detail with execution batches, execution items, timelines, and audit-friendly status semantics
-
-## Current Scope
-
-PayFi Box currently runs with:
-
-- Web frontend: Next.js + TypeScript + Tailwind CSS
-- API backend: FastAPI + SQLAlchemy + Alembic
-- Onchain execution: HashKey Chain Testnet
-- Fiat collection: Stripe Test Mode
-- KYC gating for merchant settlement and MCP balance tools
-
-Current scope is intentionally limited to test environments. It is not production custody software, not a mainnet settlement system, and not a full treasury platform.
-
-## Product Surfaces
-
-| Surface | Route | Purpose |
-| --- | --- | --- |
-| Home | `/` | Product overview and primary entry points |
-| Settlement Initiation | `/command-center` | Natural-language settlement initiation with AI guidance |
-| Settlement Operations | `/merchant` | Merchant fiat collection and stablecoin payout workflow |
-| Platform Balance | `/balance` | Fiat deposit, balance view, balance-funded settlement |
-| MCP Access | `/mcp` | Developer-facing MCP connection and tool guidance |
-| Settlement Modes | `/modes` | Operator / wallet / Safe submission model explanation |
-| Settlement Detail | `/payments/:id` | Execution truth, timeline, and audit summary |
-
-## Core Workflows
-
-### 1. Settlement Initiation
-
-Users submit a natural-language request. The system parses intent, identifies missing fields, evaluates risk, recommends a settlement mode, and produces a settlement preview before confirmation.
-
-### 2. Merchant Fiat Settlement
-
-Merchants create a quote, open a fiat payment intent, complete KYC, collect fiat via Stripe, and trigger stablecoin payout once provider-confirmed funds are available.
-
-### 3. Platform Balance
-
-Verified users can deposit fiat, convert it into platform-held stablecoin balance, and later settle directly from that balance without reopening the fiat collection flow each time.
-
-### 4. MCP Access
-
-External AI clients can connect through MCP after KYC. MCP tools expose capability checks, KYC status, balance queries, deposit actions, and balance-funded settlement preview and confirmation.
-
-### 5. Settlement Detail and Audit
-
-Every flow converges on the same settlement truth layer:
-
-- payment order
-- execution batch
-- execution items
-- timeline
-- onchain status
-- audit-facing summary
-
-## Architecture
-
-### Key Design Principle
-
-PayFi Box keeps a single execution backbone.
-
-Merchant settlement and platform-balance-funded settlement do not create separate execution engines. Both ultimately feed the same:
-
-- `payment_order`
-- `payment_execution_batch`
-- `payment_execution_item`
-
-This keeps status semantics, timelines, and audit visibility aligned across all entry points.
-
-### Monorepo Structure
-
-```text
-.
-├── apps
-│   ├── api
-│   ├── contracts
-│   └── web
-├── docs
-├── infra
-├── packages
-│   └── shared
-├── scripts
-└── Makefile
-```
-
-### Main Modules
-
-- `apps/web`
-  - Next.js app
-  - product surfaces, AI-assisted initiation, balance UI, merchant workflow, MCP docs
 - `apps/api`
-  - FastAPI services
-  - settlement initiation, confirmation, merchant settlement, balance system, MCP endpoint
-- `apps/contracts`
-  - Solidity executor and HashKey Testnet deployment workflow
-- `packages/shared`
-  - shared enums and domain types
-- `docs`
-  - architecture, local setup, and progress notes
+  FastAPI application for auth, KYC, merchant settlement, balance funding, treasury goals, MCP, and audit APIs
+- `apps/web`
+  Next.js application for the product surfaces and operator-facing workflows
+- `PostgreSQL`
+  Durable state for payments, balances, treasury goals, KYC state, and audit trails
+- `Stripe`
+  Fiat collection and hosted checkout / identity flows in the current integration path
 
-## API Overview
+## Authentication Model
 
-### Settlement Initiation
+PayFi Box now uses two explicit access paths:
 
-- `POST /api/command`
-- `POST /api/confirm`
-- `GET /api/commands`
-- `GET /api/commands/{id}`
-- `GET /api/commands/{id}/timeline`
-- `GET /api/payments`
-- `GET /api/payments/{id}`
+- `POST /api/auth/session`
+  Browser-oriented login. Sets an `httpOnly` session cookie and returns session metadata without exposing a bearer token to frontend JavaScript.
+- `POST /api/auth/token`
+  External-client login for MCP or direct API integrations. Returns a bearer token for non-browser callers.
 
-### Merchant Settlement
+This keeps browser sessions cookie-managed while preserving explicit token-based access for MCP tooling.
 
-- `POST /api/merchant/quote`
-- `POST /api/merchant/fiat-payment`
-- `POST /api/merchant/fiat-payment/{id}/start-stripe-payment`
-- `POST /api/merchant/fiat-payment/{id}/sync-stripe-payment`
-- `GET /api/merchant/fiat-payment/{id}`
+## Selected API Areas
 
-### KYC
+- Settlement initiation
+  - `POST /api/command`
+  - `POST /api/confirm`
+  - `GET /api/commands`
+  - `GET /api/payments`
+  - `GET /api/payments/{id}`
+- Merchant settlement
+  - `POST /api/merchant/quote`
+  - `POST /api/merchant/fiat-payment`
+  - `POST /api/merchant/fiat-payment/{id}/create-stripe-session`
+  - `POST /api/merchant/fiat-payment/{id}/sync-stripe-payment`
+- Platform balance
+  - `POST /api/balance/deposits`
+  - `POST /api/balance/deposits/{id}/start-stripe-payment`
+  - `POST /api/balance/deposits/{id}/sync-stripe-payment`
+  - `POST /api/balance/payments/preview`
+  - `POST /api/balance/payments/confirm`
+- Treasury agent
+  - `POST /api/balance/goals`
+  - `GET /api/balance/goals`
+  - `GET /api/balance/goals/{id}`
+  - `POST /api/balance/goals/{id}/advance`
+  - `POST /api/balance/goals/{id}/confirm`
+- KYC
+  - `POST /api/kyc/start`
+  - `GET /api/kyc/{id}`
 
-- `POST /api/kyc/start`
-- `GET /api/kyc/{id}`
+## Quick Start
 
-### Platform Balance
-
-- `POST /api/balance/deposits`
-- `POST /api/balance/deposits/{id}/start-stripe-payment`
-- `POST /api/balance/deposits/{id}/sync-stripe-payment`
-- `GET /api/balance/deposits/{id}`
-- `GET /api/balance/accounts/{user_id}`
-- `GET /api/balance/accounts/{user_id}/ledger`
-- `POST /api/balance/payments/preview`
-- `POST /api/balance/payments/confirm`
-
-### MCP
-
-- Endpoint: `http://127.0.0.1:8000/mcp/`
-- Current tools:
-  - `mcp_capability_status`
-  - `start_user_kyc`
-  - `get_kyc_status`
-  - `get_balance`
-  - `get_balance_ledger`
-  - `create_balance_deposit`
-  - `start_balance_deposit_checkout`
-  - `sync_balance_deposit_status`
-  - `get_balance_deposit_detail`
-  - `payment_preview_from_balance`
-  - `payment_confirm_from_balance`
-
-KYC is enforced before deposit and payment tools are made available through MCP.
-
-## Local Setup
-
-### Prerequisites
-
-- Node.js 24 or compatible
-- npm 11 or compatible
-- Python 3.13 or compatible
-- PostgreSQL 16
-- `make`
-
-### Install
+1. Create local environment files.
 
 ```bash
 cp .env.example .env
 cp apps/web/.env.example apps/web/.env.local
 cp apps/api/.env.example apps/api/.env
-make install
 ```
 
-### Database
+2. Preferred local development mode: hot reload in the foreground.
 
 ```bash
+make local-dev
+```
+
+Use this when you are actively editing code. It will:
+
+- create missing local env files from the checked-in examples
+- install dependencies only if they are missing
+- start PostgreSQL
+- run migrations and idempotent demo seeding
+- start Next.js dev mode and Uvicorn reload mode together
+
+3. Preferred local preview mode: production-style build plus background servers.
+
+```bash
+make local-preview
+```
+
+Use this when you want to review the site as a built app instead of a live-reload dev server.
+
+4. Manual fallback: install dependencies, prepare the database, and seed local data.
+
+```bash
+make install
 make db
 make migrate
 make seed
 ```
 
-### Start Services
+5. Manual fallback: start the API and web apps.
 
 ```bash
 make api-start
 make web-start
 ```
 
-Status helpers:
+To stop either local mode:
 
 ```bash
-make api-status
-make web-status
+make local-stop
 ```
 
-Stop helpers:
+For full local setup details, environment flags, local URLs, seed accounts, and MCP examples, see [docs/local-development.md](docs/local-development.md).
 
-```bash
-make api-stop
-make web-stop
+## Release Gates
+
+The repo includes enforced local and CI gates:
+
+- `npm run lint`
+- `npm run lint:unused`
+- `npm run test:config`
+- `npm run test:web`
+- `npm run test:api`
+- `npm run test:contracts`
+- `npm run test`
+- `npm run demo:ready` before internal demos
+- `npm run demo:check` against the local seeded API before internal demos
+
+CI runs these checks on pull requests and pushes to the main branch.
+
+## Deployment Notes
+
+- Production execution is expected to use provider-backed conversion and custody settlement.
+- Browser access should use cookie sessions, not bearer tokens stored in frontend storage.
+- Public deployments should keep internal demo surfaces disabled.
+- The local/internal demo flow may use seed data and sandbox/mock/provider paths; real Stripe production acquiring and real custody settlement are outside the local demo gate.
+- Internal demo flow and fallbacks are documented in [docs/demo-runbook.md](docs/demo-runbook.md).
+- Edge rate limiting and WAF rules should be added at the deploy platform in addition to the application-layer login throttling built into the API.
+- Required production secrets and fail-fast rules are documented in [docs/production-deployment.md](docs/production-deployment.md).
+
+## Repository Structure
+
+```text
+.
+├── apps
+│   ├── api          # FastAPI backend
+│   ├── contracts    # Hardhat contracts and settlement execution tests
+│   └── web          # Next.js frontend
+├── docs             # public + internal docs
+├── infra            # infrastructure notes and assets
+├── packages         # reserved for future shared modules (currently empty)
+├── scripts          # local and CI helpers
+└── .github
 ```
 
-## Environment Notes
+## Docs
 
-### Stripe
-
-For merchant settlement and platform-balance deposit flows, configure Stripe in `apps/api/.env`.
-
-Key variables include:
-
-```env
-STRIPE_SECRET_KEY=...
-STRIPE_WEBHOOK_SECRET=...
-STRIPE_CHECKOUT_SUCCESS_URL=http://127.0.0.1:3000/merchant?stripe=success
-STRIPE_CHECKOUT_CANCEL_URL=http://127.0.0.1:3000/merchant?stripe=cancel
-STRIPE_IDENTITY_RETURN_URL=http://127.0.0.1:3000/merchant?kyc=done
-```
-
-Balance deposit flows can also provide route-specific success and cancel URLs from the frontend.
-
-### HashKey Testnet
-
-For onchain execution, configure the HashKey testnet settings in `apps/api/.env`.
-
-```env
-PAYMENT_EXECUTION_BACKEND=hashkey_testnet
-HASHKEY_RPC_URL=https://testnet.hsk.xyz
-HASHKEY_CHAIN_ID=133
-HASHKEY_EXPLORER_BASE=https://testnet-explorer.hsk.xyz
-HASHKEY_OPERATOR_PRIVATE_KEY=0x...
-HASHKEY_PAYMENT_EXECUTOR_ADDRESS=0x...
-HASHKEY_PAYMENT_TOKEN_ADDRESS=0x...
-```
-
-If not configured, the system can remain on safer local execution defaults for non-onchain development paths.
-
-## Verification
-
-### Health Check
-
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-Expected response:
-
-```json
-{"status":"ok","service":"payfi-box-api"}
-```
-
-### Balance Deposit Verification
-
-Run the end-to-end verification script:
-
-```bash
-env -u DATABASE_URL ./.venv/bin/python scripts/verify_balance_deposit.py
-```
-
-It verifies:
-
-- KYC blocking when the user is not verified
-- checkout creation for verified users
-- provider-confirmed balance credit
-- duplicate webhook idempotency
-
-## Recommended First Run
-
-1. Start the API and web app
-2. Open `/command-center` to see settlement initiation
-3. Open `/merchant` to see fiat collection -> stablecoin payout
-4. Open `/balance` to see platform balance and balance-funded settlement
-5. Open `/mcp` to review MCP connection and tool access
-
-## Documentation
-
-- [Architecture](docs/architecture.md)
-- [Development Setup](docs/dev-setup.md)
-- [Progress Notes](docs/progress-2026-04-06.md)
-
-## Current Positioning
-
-PayFi Box is currently best understood as:
-
-- a stablecoin settlement infrastructure
-- a web product with AI-assisted settlement initiation
-- a platform-balance settlement system
-- an MCP-accessible settlement backend for external AI clients
-
-It is not yet:
-
-- a production custody platform
-- a mainnet treasury platform
-- a fully permissioned enterprise payment stack
+- Public product and repo entry: [README.md](README.md)
+- Internal demo runbook: [docs/demo-runbook.md](docs/demo-runbook.md)
+- Local development and internal demo notes: [docs/local-development.md](docs/local-development.md)
+- Production deployment checklist: [docs/production-deployment.md](docs/production-deployment.md)
+- Architecture and engineering notes: [docs/architecture.md](docs/architecture.md)
 
 ## License
 
-This repository is licensed under Apache License 2.0. See [LICENSE](LICENSE).
+Apache-2.0. See [LICENSE](LICENSE).
