@@ -34,6 +34,19 @@ It keeps the full chain visible:
 - how the payout was executed
 - what the final audit trail looks like
 
+## Who It Is For
+
+PayFi Box is currently best suited for teams that need payment execution, operations visibility, and programmable access on the same surface.
+
+- Cross-border trade and export-facing businesses
+  Continue operating in fiat while gaining a faster settlement rail behind the scenes.
+- Platform operators and finance teams
+  Keep settlement state, receipt state, and payout progression visible in one workflow.
+- Internal reviewers and audit stakeholders
+  Inspect timelines, execution items, risk signals, and transfer records without losing payment context.
+- AI-native enterprise systems
+  Use MCP and API access to connect balance, settlement, and audit actions into larger operational workflows.
+
 ## Primary Workflows
 
 - `/command-center`
@@ -59,6 +72,19 @@ It keeps the full chain visible:
   The intended production route is provider-backed conversion plus custody payout, not direct backend-managed hot-wallet execution.
 - AI-visible surfaces
   AI is used to draft, explain, summarize, and guide next actions, while ledger state, provider state, and execution state remain deterministic.
+
+## Why It Is Different
+
+PayFi Box is not positioned as a wallet, a chatbot, or a single payment rail.
+
+- Fiat-first user experience
+  Businesses do not need to become stablecoin-native just to gain stablecoin settlement efficiency.
+- Execution truth over status-only UX
+  The product keeps quote, KYC, receipt, payout, and audit state on one continuous line.
+- AI with controlled boundaries
+  AI helps operators understand and coordinate actions, but deterministic system state remains the final authority for money movement.
+- Built for both humans and systems
+  The same product can be used by business operators in the browser and by external AI clients through MCP and APIs.
 
 ## What AI Enables
 
