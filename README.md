@@ -62,6 +62,16 @@ PayFi Box is currently best suited for teams that need payment execution, operat
 - `/audit`
   Transfer records and internal review surface for traceability, export, and AI-generated summaries.
 
+## Demo Surfaces
+
+The current repo includes a working local demo across operator, balance, and developer-facing product surfaces.
+
+![PayFi Box home surface](docs/screenshots/home.png)
+
+![PayFi Box merchant settlement surface](docs/screenshots/merchant.png)
+
+![PayFi Box developer onboarding surface](docs/screenshots/developers.png)
+
 ## Product Snapshot
 
 - Unified execution backbone
@@ -144,6 +154,19 @@ PayFi Box now uses two explicit access paths:
 
 This keeps browser sessions cookie-managed while preserving explicit token-based access for MCP tooling.
 
+## Secret Boundary
+
+PayFi Box keeps keys and sensitive credentials behind a strict boundary:
+
+- `.env` files
+  Store secrets and local configuration only. They must never be committed with live credentials.
+- `apps/web/lib/api.ts`
+  Centralizes the frontend API wrapper and exposes clean client-side methods.
+- Product surface code
+  Calls the API wrapper instead of handling provider secrets directly.
+
+This keeps business flows readable in the frontend while leaving secret handling on the server and environment boundary where it belongs.
+
 ## Selected API Areas
 
 - Settlement initiation
@@ -175,15 +198,7 @@ This keeps browser sessions cookie-managed while preserving explicit token-based
 
 ## Quick Start
 
-1. Create local environment files.
-
-```bash
-cp .env.example .env
-cp apps/web/.env.example apps/web/.env.local
-cp apps/api/.env.example apps/api/.env
-```
-
-2. Preferred local development mode: hot reload in the foreground.
+1. Preferred local development mode: hot reload in the foreground.
 
 ```bash
 make local-dev
@@ -197,7 +212,7 @@ Use this when you are actively editing code. It will:
 - run migrations and idempotent demo seeding
 - start Next.js dev mode and Uvicorn reload mode together
 
-3. Preferred local preview mode: production-style build plus background servers.
+2. Preferred local preview mode: production-style build plus background servers.
 
 ```bash
 make local-preview
@@ -205,7 +220,7 @@ make local-preview
 
 Use this when you want to review the site as a built app instead of a live-reload dev server.
 
-4. Manual fallback: install dependencies, prepare the database, and seed local data.
+3. Manual fallback: install dependencies, prepare the database, and seed local data.
 
 ```bash
 make install
@@ -214,7 +229,7 @@ make migrate
 make seed
 ```
 
-5. Manual fallback: start the API and web apps.
+4. Manual fallback: start the API and web apps.
 
 ```bash
 make api-start
