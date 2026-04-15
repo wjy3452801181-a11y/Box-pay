@@ -16,6 +16,19 @@ In practical terms, PayFi Box sits between familiar enterprise payment workflows
 
 The current product showcase is centered on an `HKD -> e-HKD` funding and settlement path, while keeping the execution model general enough for other supported stablecoins.
 
+## At a Glance
+
+- What it is
+  An enterprise payment orchestration layer for fiat-to-stablecoin settlement.
+- What users keep
+  Familiar fiat payment and operations workflows.
+- What the platform adds
+  Conversion, settlement coordination, execution visibility, and audit traceability.
+- What AI does
+  Draft, explain, summarize, and guide next actions without becoming the source of truth for money movement.
+- How it integrates
+  Through browser surfaces, API access, and MCP tools for external AI clients.
+
 ## Why PayFi Box
 
 Most payment products expose only the front of the flow: a request goes in, a status comes back. PayFi Box is built around the execution truth behind that status.
@@ -46,6 +59,17 @@ PayFi Box is currently best suited for teams that need payment execution, operat
   Inspect timelines, execution items, risk signals, and transfer records without losing payment context.
 - AI-native enterprise systems
   Use MCP and API access to connect balance, settlement, and audit actions into larger operational workflows.
+
+## Typical Use Cases
+
+- Enterprise pays in fiat, platform settles in stablecoin
+  Keep the payment experience familiar while improving global settlement efficiency behind the scenes.
+- Platform treasury workflow
+  Top up fiat, convert into stored value, and settle directly from balance with visible state transitions.
+- Internal review and post-payment investigation
+  Open transfer records, inspect timelines, and review AI-assisted summaries on top of deterministic execution data.
+- AI-assisted operations
+  Let internal or external AI systems initiate, explain, or coordinate payment workflows through API and MCP boundaries.
 
 ## Primary Workflows
 
