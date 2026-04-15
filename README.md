@@ -96,6 +96,25 @@ The current repo includes a working local demo across operator, balance, and dev
 
 ![PayFi Box developer onboarding surface](docs/screenshots/developers.png)
 
+## 3-Minute Demo Path
+
+For a fast product walkthrough, use this route order:
+
+1. `/access`
+   Establish browser access and choose the role-specific demo path.
+2. `/command-center`
+   Show natural-language initiation and AI-assisted payment structuring.
+3. `/merchant`
+   Show how a fiat workflow advances into stablecoin settlement operations.
+4. `/balance`
+   Show deposits, stored value, treasury-style movement, and payment context.
+5. `/audit`
+   Show transfer records, traceability, and review visibility.
+6. `/developers`
+   Show API and MCP entrypoints for external systems and AI clients.
+
+This is the clearest way to explain the full product in under three minutes.
+
 ## Product Snapshot
 
 - Unified execution backbone
@@ -312,6 +331,7 @@ CI runs these checks on pull requests and pushes to the main branch.
 ## Docs
 
 - Public product and repo entry: [README.md](README.md)
+- External one-pager: [docs/one-pager.md](docs/one-pager.md)
 - Internal demo runbook: [docs/demo-runbook.md](docs/demo-runbook.md)
 - Local development and internal demo notes: [docs/local-development.md](docs/local-development.md)
 - Production deployment checklist: [docs/production-deployment.md](docs/production-deployment.md)
